@@ -47,6 +47,9 @@ body {
   }
   .legend {
     display: block;
+    a {
+      cursor: pointer;
+    }
   }
   .identify {
     display: block;

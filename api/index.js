@@ -1,11 +1,13 @@
 const http = require('http');
 const socketIO = require('socket.io');
 const app = require('./app');
+const {refereeApi} = require('./refereeApi');
 
 const server = http.createServer(app);
 
 const hostname = '127.0.0.1';
 const port = 8080;
+const refereePort = 8081
 
 const io = socketIO(server);
 
@@ -20,3 +22,7 @@ io.on('connection', (socket) => {
   
   socket.emit('server connected', 'server connected OK');
 });
+
+refereeApi.listen(refereePort, () => {
+  console.log(`Referee is listening on port ${refereePort}`)
+})
