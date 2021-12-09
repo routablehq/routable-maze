@@ -17,6 +17,15 @@ const socket = io('http://localhost:8080');
 
 function App() {
 
+  const [w, h] = [40, 40];
+
+  const [identified, setIdentified] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [otherPlayers, setOtherPlayers] = useState({});
+  const [seed, setSeed] = useState();
+  const { x, y, maze, loaded } = useMaze(w, h, seed);
+
+
   useEffect(() => {
     socket.emit('client_connected', 'client connected');
 
@@ -33,13 +42,6 @@ function App() {
   useEffect(() => {
     socket.emit('location_change', { x, y });
   }, [x, y]);
-
-  const [identified, setIdentified] = useState(false);
-  const [playerName, setPlayerName] = useState("");
-  const [otherPlayers, setOtherPlayers] = useState({});
-  const [seed, setSeed] = useState();
-
-  const [w, h] = [40, 40];
 
   function consumeIdentity(data) {
     setSeed(data.seed);
@@ -59,8 +61,6 @@ function App() {
     setIdentified(false);
   }
 
-  const { x, y, maze, loaded } = useMaze(w, h, seed);
-
   useEffect(() => {
     let currentPlayerData = localStorage.getItem('currentPlayerData');
     if (currentPlayerData) {
@@ -75,7 +75,7 @@ function App() {
       {!identified && <Identify setIdentity={setIdentity} />}
       {identified && loaded && (
         <div>
-          <Legend playerName={playerName} otherPlayers={otherPlayers} unregister={clearIdentity}/>
+          <Legend playerName={playerName} otherPlayers={[]} unregister={clearIdentity}/>
           <Field width={w} height={h}>
             <Hedges maze={maze} width={w} height={h} />
             <Character x={x} y={y} />
