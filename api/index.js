@@ -14,8 +14,14 @@ server.listen(port, hostname, () => {
 });
 
 io.on('connection', (socket) => {
-  socket.on('client connected', (payload) => {
-    console.log('client connected', payload)
+  socket.on('client_connected', (payload) => {
+    console.log('client_connected', payload)
+  });
+
+  socket.on('location_change', (payload) => {
+    const {x, y} = payload;
+    console.log(payload)
+    socket.broadcast.emit('new_player_location', { x, y, id: socket.id } );
   });
   
   socket.emit('server connected', 'server connected OK');
