@@ -23,6 +23,7 @@ function App() {
 
   const [identified, setIdentified] = useState(false);
   const [playerName, setPlayerName] = useState("");
+  const [otherPlayers, setOtherPlayers] = useState(["OP 2", "OP 3", "OP 4", "OP 5"])
 
   function setIdentity(name) {
     setPlayerName(name);
@@ -39,7 +40,7 @@ function App() {
       <h1 className="title">A-maze'in Routable</h1>
       {!identified && <Identify setIdentity={setIdentity} />}
       {identified && (
-        <Legend playerName={playerName}/>
+        <Legend playerName={playerName} otherPlayers={otherPlayers}/>
       )}
       {identified && loaded && (
         <Field width={w} height={h}>
