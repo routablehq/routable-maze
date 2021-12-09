@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import io from 'socket.io-client';
 
 import useMaze from './state/maze';
@@ -9,6 +9,8 @@ import GlobalStyles from "./components/GlobalStyles"
 
 
 import './App.css';
+import Identify from './components/Identify';
+import Legend from './components/Legend';
 
 const socket = io('http://localhost:8080');
 
@@ -18,16 +20,30 @@ function App() {
   socket.on('server connected', (payload) => {
     console.log('server connected', payload);
   });
-  
-  const { x, y, maze, loaded } = useMaze()
+
+  const [identified, setIdentified] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+
+  function setIdentity(name) {
+    setPlayerName(name);
+    setIdentified(true);
+  }
+
+  const [w, h] = [40, 40];
+  const seed = 123456;
+  const { x, y, maze, loaded } = useMaze(w, h, seed)
   
   return (
     <div className="app">
       <GlobalStyles />
       <h1 className="title">A-maze'in Routable</h1>
-      {loaded && (
-        <Field width={30} height={30}>
-          <Hedges maze={maze} width={30} height={30} />
+      {!identified && <Identify setIdentity={setIdentity} />}
+      {identified && (
+        <Legend playerName={playerName}/>
+      )}
+      {identified && loaded && (
+        <Field width={w} height={h}>
+          <Hedges maze={maze} width={w} height={h} />
           <Character x={x} y={y} />
         </Field>
       )}
