@@ -16,18 +16,32 @@ import { playerService } from './services'
 const socket = io('http://localhost:8080');
 
 function App() {
-  socket.emit('client connected', 'client connected');
-  
-  socket.on('server connected', (payload) => {
-    console.log('server connected', payload);
-  });
+
+  const [w, h] = [40, 40];
 
   const [identified, setIdentified] = useState(false);
   const [playerName, setPlayerName] = useState("");
-  const [otherPlayers, setOtherPlayers] = useState(["OP 2", "OP 3", "OP 4", "OP 5"]);
+  const [otherPlayers, setOtherPlayers] = useState({});
   const [seed, setSeed] = useState();
+  const { x, y, maze, loaded } = useMaze(w, h, seed);
 
-  const [w, h] = [40, 40];
+
+  useEffect(() => {
+    socket.emit('client_connected', 'client connected');
+
+    socket.on('server_connected', (payload) => {
+      console.log('server connected', payload);
+    });
+
+    socket.on('new_player_location', ({ id, x, y }) => {
+      console.log(`player ${id}: ${x} ${y}`);
+      setOtherPlayers(prev => ({ ...prev, [id]: { x, y } }));
+    });
+  }, []);
+
+  useEffect(() => {
+    socket.emit('location_change', { x, y });
+  }, [x, y]);
 
   function consumeIdentity(data) {
     setSeed(data.seed);
@@ -47,8 +61,6 @@ function App() {
     setIdentified(false);
   }
 
-  const { x, y, maze, loaded } = useMaze(w, h, seed);
-
   useEffect(() => {
     let currentPlayerData = localStorage.getItem('currentPlayerData');
     if (currentPlayerData) {
@@ -63,10 +75,14 @@ function App() {
       {!identified && <Identify setIdentity={setIdentity} />}
       {identified && loaded && (
         <div>
-          <Legend playerName={playerName} otherPlayers={otherPlayers} unregister={clearIdentity}/>
+          <Legend playerName={playerName} otherPlayers={[]} unregister={clearIdentity}/>
           <Field width={w} height={h}>
             <Hedges maze={maze} width={w} height={h} />
             <Character x={x} y={y} />
+            {Object.keys(otherPlayers).map(key => {
+              const { x: i, y: j }  = otherPlayers[key];
+              return <Character x={i} y={j} key={key} />;
+            })}
           </Field>
         </div>
       )}
