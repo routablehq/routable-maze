@@ -12,8 +12,4 @@ refereeApi.use((req, res, next) => {
   next();
 });
 
-refereeApi.post('/register', function (req, res) {
-  res.json({"seed": 123456, "playerName": req.body.playerName });
-});
-
 module.exports = { refereeApi };

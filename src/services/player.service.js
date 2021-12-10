@@ -1,10 +1,10 @@
 import { handleResponse } from './helper.handleResponse';
 
-function register(name) {
+function register(id, name) {
   const requestOptions = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 'playerName': name })
+    body: JSON.stringify({ id, 'playerName': name })
   };
 
   return fetch('http://127.0.0.1:8081/register', requestOptions)

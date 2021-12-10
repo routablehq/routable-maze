@@ -45,8 +45,12 @@ body {
     bottom: 0;
     font-weight: 900;
   }
+  .game-container {
+    display: flex;
+  }
   .legend {
     display: block;
+    padding-right: 40px;
     a {
       cursor: pointer;
     }

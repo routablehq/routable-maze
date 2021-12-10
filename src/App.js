@@ -23,6 +23,7 @@ function App() {
   const [playerName, setPlayerName] = useState("");
   const [otherPlayers, setOtherPlayers] = useState({});
   const [seed, setSeed] = useState();
+  const [socketId, setSocketId] = useState("");
   const { x, y, maze, loaded } = useMaze(w, h, seed);
 
 
@@ -33,9 +34,13 @@ function App() {
       console.log('server connected', payload);
     });
 
-    socket.on('new_player_location', ({ id, x, y }) => {
-      console.log(`player ${id}: ${x} ${y}`);
-      setOtherPlayers(prev => ({ ...prev, [id]: { x, y } }));
+    socket.on("connect", () => {
+      setSocketId(socket.id);
+    });
+
+    socket.on('new_player_location', ({ id, name, x, y }) => {
+      console.log(`player ${name} (${id}): ${x} ${y}`);
+      setOtherPlayers(prev => ({ ...prev, [id]: { x, y, name } }));
     });
   }, []);
 
@@ -50,7 +55,7 @@ function App() {
   }
 
   function setIdentity(name) {
-    playerService.register(name).then((data) => {
+    playerService.register(socketId, name).then((data) => {
       consumeIdentity(data);
     });
   }
@@ -74,8 +79,8 @@ function App() {
       <h1 className="title">A-maze'in Routable</h1>
       {!identified && <Identify setIdentity={setIdentity} />}
       {identified && loaded && (
-        <div>
-          <Legend playerName={playerName} otherPlayers={[]} unregister={clearIdentity}/>
+        <div className="game-container">
+          <Legend playerName={playerName} otherPlayers={otherPlayers} unregister={clearIdentity}/>
           <Field width={w} height={h}>
             <Hedges maze={maze} width={w} height={h} />
             <Character x={x} y={y} />

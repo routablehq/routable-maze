@@ -1,10 +1,11 @@
 const Legend = ({playerName, otherPlayers, unregister}) => {
-  const otherPlayersList = otherPlayers.map((opName) => <li>{opName}</li>);
+  const otherPlayersList = (Object.keys(otherPlayers).length === 0) ? "" :
+    Object.keys(otherPlayers).map((key) => <li>{otherPlayers[key]['name']}</li>);
   return (
     <div className="legend">
       <h2>Legend</h2>
       <ul>
-        <li>{playerName} - <a onClick={unregister}>unregister</a> </li>
+        <li>{playerName} - <button onClick={unregister}>unregister</button> </li>
         {otherPlayersList}
       </ul>
     </div>
