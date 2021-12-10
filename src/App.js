@@ -23,7 +23,7 @@ function App() {
   const [playerName, setPlayerName] = useState("");
   const [otherPlayers, setOtherPlayers] = useState({});
   const [seed, setSeed] = useState();
-  const [socketId, setSocketId] = useState("");
+  const [playerId, setPlayerId] = useState("");
   const { x, y, maze, loaded } = useMaze(w, h, seed);
 
 
@@ -34,36 +34,44 @@ function App() {
       console.log('server connected', payload);
     });
 
-    socket.on("connect", () => {
-      setSocketId(socket.id);
-    });
-
     socket.on('new_player_location', ({ id, name, x, y }) => {
       console.log(`player ${name} (${id}): ${x} ${y}`);
       setOtherPlayers(prev => ({ ...prev, [id]: { x, y, name } }));
     });
+
+    socket.on('player_left', ({id}) => {
+      delete otherPlayers[id];
+      setOtherPlayers(otherPlayers);
+    });
   }, []);
 
   useEffect(() => {
-    socket.emit('location_change', { x, y });
+    socket.emit('location_change', { x, y, id: playerId });
   }, [x, y]);
+
+  useEffect(() => {
+    socket.emit('player_unregistered', { id: playerId });
+  }, [playerName]);
 
   function consumeIdentity(data) {
     setSeed(data.seed);
+    setPlayerId(data.id);
     setPlayerName(data.playerName);
     setIdentified(true);
   }
 
   function setIdentity(name) {
-    playerService.register(socketId, name).then((data) => {
+    playerService.register(name).then((data) => {
       consumeIdentity(data);
     });
   }
 
   function clearIdentity() {
-    playerService.unregister();
+    playerService.unregister(playerId);
+    localStorage.removeItem('currentPlayerData');
     setPlayerName(null);
     setIdentified(false);
+    setOtherPlayers({});
   }
 
   useEffect(() => {

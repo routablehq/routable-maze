@@ -1,3 +1,4 @@
+const uuid = require('uuid');
 const http = require('http');
 const socketIO = require('socket.io');
 const app = require('./app');
@@ -11,6 +12,7 @@ const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 0 });
 
 const REGISTERED_PLAYER_KEY = "registeredPlayers";
+const MAZE_SEED = 123456;
 
 const hasPlayer = (playerName) => {
   const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY) || new Set();
@@ -22,12 +24,21 @@ const registerPlayer = (id, playerName) => {
   const otherPlayers = Array.from(registeredPlayers);
   registeredPlayers.add(playerName);
   cache.set(REGISTERED_PLAYER_KEY, registeredPlayers);
-  cache.set(id, {playerName})
-  return [123456, otherPlayers];
+  cache.set(id, {playerName, seed: MAZE_SEED})
+  return [MAZE_SEED, otherPlayers];
 }
 
 const getPlayerName = (id) => {
   return cache.has(id) ? cache.get(id).playerName : null;
+}
+
+const removePlayer = (id) => {
+  console.log(`Removing player ${id}`);
+  const player = cache.take(id);
+  console.log(`Removing player ${JSON.stringify(player)}`);
+  const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY);
+  registeredPlayers.delete(player.playerName);
+  cache.set(REGISTERED_PLAYER_KEY, registeredPlayers);
 }
 
 const resetAll = () => {
@@ -55,11 +66,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on('location_change', (payload) => {
-    const {x, y} = payload;
-    const name = getPlayerName(socket.id);
-    console.log(`name: ${name}: ${JSON.stringify(payload)}`);
-    socket.broadcast.emit('new_player_location', { x, y, id: socket.id, name } );
+    const {x, y, id} = payload;
+    const name = getPlayerName(id);
+    if (name) {
+      console.log(`name: ${name}: ${JSON.stringify(payload)}`);
+      socket.broadcast.emit('new_player_location', { x, y, id, name } );
+    } else {
+      console.log("unregistered player: " + id);
+    }
   });
+
+  socket.on('player_unregistered', (payload) => {
+    socket.broadcast.emit('player_left', payload)
+  })
   
   socket.emit('server connected', 'server connected OK');
 });
@@ -68,17 +87,24 @@ io.on('connection', (socket) => {
 
 refereeApi.post('/register', function (req, res) {
   const playerName = req.body.playerName;
-  const id = req.body.id;
-  if (!hasPlayer(playerName)) {
+  const id = req.body.id || uuid.v4();
+  if (req.body.id || !hasPlayer(playerName)) {
     const [seed, otherPlayers] = registerPlayer(id, playerName);
-    res.json({"seed": seed, "playerName": req.body.playerName});
+    res.json({id, seed, "playerName": req.body.playerName});
+  } else {
+    res.sendStatus(400);
   }
 });
 
 refereeApi.get('/86', function (req, res) {
   resetAll();
-  res.sendStatus(204)
+  res.sendStatus(204);
 });
+
+refereeApi.delete('/unregister/:id', function (req, res) {
+  removePlayer(req.params.id);
+  res.sendStatus(204);
+})
 
 refereeApi.listen(refereePort, () => {
   console.log(`Referee is listening on port ${refereePort}`)
