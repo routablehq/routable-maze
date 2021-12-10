@@ -18,23 +18,35 @@ const reducer = (state, { type, payload }) => {
       return { ...state, loaded: true, maze: payload }
     case KEY_PRESS: {
       const cell = state.maze[state.y][state.x]
+      let newState = state;
+
       if (payload === "ArrowLeft" && !cell.left) {
-        return { ...state, x: max(0, state.x - 1) };
+        newState = { ...state, x: max(0, state.x - 1) };
       }
       
       if (payload === "ArrowUp" && !cell.top) {
-        return { ...state, y: max(0, state.y - 1) }
+        newState = { ...state, y: max(0, state.y - 1) }
       }
       
       if (payload === "ArrowRight" && !cell.right) {
-        return { ...state, x: min(state.maze.length, state.x + 1) }
+        newState = { ...state, x: min(state.maze.length, state.x + 1) }
       }
       
       
       if (payload === "ArrowDown" && !cell.bottom) {
-        return { ...state, y: min(state.maze.length, state.y + 1) }
+        newState = { ...state, y: min(state.maze.length, state.y + 1) }
+      }
+
+      if (newState.x === state.maze.length - 1  && newState.y == state.maze.length - 1) {
+        console.log('you fucking won');
+        newState.won = true;
+      }
+
+      if (payload === 'Tab') {
+        newState = { ...state, x: state.maze.length - 2, y: state.maze.length - 2};
       }
       
+      return newState;
     }
     default:
       return state
@@ -46,7 +58,8 @@ const useMaze = (w, h, seed) => {
   const [state, dispatch] = useReducer(reducer, {
     maze: [],
     x: 0,
-    y: 0
+    y: 0,
+    won: false,
   })
   useEffect(() => {
     const maze = generate(w, h, true, seed)

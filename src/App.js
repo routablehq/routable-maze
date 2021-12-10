@@ -12,6 +12,7 @@ import './App.css';
 import Identify from './components/Identify';
 import Legend from './components/Legend';
 import { playerService } from './services'
+import Fireworks from './components/Fireworks';
 
 console.log('-window', window.location);
 const isProd = window.location.href.includes('maze.app');
@@ -28,7 +29,7 @@ function App() {
   const [seed, setSeed] = useState();
   const [playerId, setPlayerId] = useState("");
   const [color, setColor] = useState("e2a477");
-  const { x, y, maze, loaded } = useMaze(w, h, seed);
+  const { x, y, maze, loaded, won } = useMaze(w, h, seed);
 
 
   useEffect(() => {
@@ -85,6 +86,10 @@ function App() {
       consumeIdentity(JSON.parse(currentPlayerData));
     }
   }, []);
+
+  if (won) {
+    return <Fireworks/>;
+  }
 
   return (
     <div className="app">
