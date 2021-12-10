@@ -14,7 +14,6 @@ function register(name) {
   return fetch(`${URL}/register`, requestOptions)
     .then(handleResponse)
     .then(data => {
-      localStorage.setItem('currentPlayerData', JSON.stringify(data));
       return data;
     });
 }

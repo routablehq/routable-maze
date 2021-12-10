@@ -74,18 +74,10 @@ function App() {
 
   function clearIdentity() {
     playerService.unregister(playerId);
-    localStorage.removeItem('currentPlayerData');
     setPlayerName(null);
     setIdentified(false);
     setOtherPlayers({});
   }
-
-  useEffect(() => {
-    let currentPlayerData = localStorage.getItem('currentPlayerData');
-    if (currentPlayerData) {
-      consumeIdentity(JSON.parse(currentPlayerData));
-    }
-  }, []);
 
   if (won) {
     return <Fireworks/>;
