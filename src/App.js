@@ -16,7 +16,7 @@ import Fireworks from './components/Fireworks';
 
 console.log('-window', window.location);
 const isProd = window.location.href.includes('maze.app');
-const URL = isProd ? 'https://maze.app.megabox.dev' : 'http://localhost:3380'
+const URL = isProd ? 'https://maze.app.megabox.dev:3380' : 'http://localhost:3380'
 const socket = io(URL);
 
 function App() {

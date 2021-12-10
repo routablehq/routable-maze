@@ -2,7 +2,7 @@ import { handleResponse } from './helper.handleResponse';
 
 const REF_HOST = "http://127.0.0.1:3381"
 const isProd = window.location.href.includes('maze.app');
-const URL = isProd ? 'https://maze.app.megabox.dev' : REF_HOST;
+const URL = isProd ? 'https://maze.app.megabox.dev:3381' : REF_HOST;
 
 function register(name) {
   const requestOptions = {
