@@ -60,8 +60,8 @@ const resetAll = () => {
 const server = http.createServer(app);
 
 const hostname = '127.0.0.1';
-const port = 8080;
-const refereePort = 8081
+const port = 3380;
+const refereePort = 3381
 
 const io = socketIO(server);
 

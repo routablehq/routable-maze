@@ -13,7 +13,7 @@ import Identify from './components/Identify';
 import Legend from './components/Legend';
 import { playerService } from './services'
 
-const socket = io('http://localhost:8080');
+const socket = io('http://localhost:3380');
 
 function App() {
 
