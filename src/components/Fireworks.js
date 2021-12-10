@@ -1,11 +1,12 @@
 import { Fireworks } from 'fireworks-js/dist/react'
+import reactDom from 'react-dom'
 
-const FireworksCelebration = () => {
+const FireworksCelebration = ({ player }) => {
   const options = {
     speed: 3
   }
 
-  const style = {
+  const fireworksStyle = {
     top: 0,
     left: 0,
     width: '100%',
@@ -14,7 +15,15 @@ const FireworksCelebration = () => {
     background: '#000'
   }
 
-  return <Fireworks options={options} style={style} />
+  const playerStyle = {
+    color: 'red',
+  }
+
+  return (
+    <Fireworks options={options} style={fireworksStyle}>
+        <span style={playerStyle}>Player { player } won!</span>
+    </Fireworks>
+  );
 }
 
 export default FireworksCelebration;

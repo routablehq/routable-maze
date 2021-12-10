@@ -30,6 +30,7 @@ function App() {
   const [playerId, setPlayerId] = useState("");
   const [color, setColor] = useState("e2a477");
   const { x, y, maze, loaded, won } = useMaze(w, h, seed);
+  const [lost, setLost] = useState(false);
 
 
   useEffect(() => {
@@ -47,6 +48,10 @@ function App() {
     socket.on('player_left', ({id}) => {
       delete otherPlayers[id];
       setOtherPlayers(otherPlayers);
+    });
+
+    socket.on('another_player_won', ({ id }) => {
+      setLost(true);
     });
   }, []);
 
@@ -79,8 +84,13 @@ function App() {
     setOtherPlayers({});
   }
 
+  if (lost) {
+    return <div>You f#!$ lost dude</div>;
+  }
+
   if (won) {
-    return <Fireworks/>;
+    socket.emit('player_won', { id: playerId });
+    return <Fireworks player={playerName} />;
   }
 
   return (

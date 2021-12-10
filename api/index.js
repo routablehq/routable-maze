@@ -88,8 +88,12 @@ io.on('connection', (socket) => {
   });
 
   socket.on('player_unregistered', (payload) => {
-    socket.broadcast.emit('player_left', payload)
-  })
+    socket.broadcast.emit('player_left', payload);
+  });
+
+  socket.on('player_won', ({ id }) => {
+    socket.broadcast.emit('another_player_won', { id });
+  });
   
   socket.emit('server connected', 'server connected OK');
 });
