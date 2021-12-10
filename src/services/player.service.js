@@ -1,6 +1,8 @@
 import { handleResponse } from './helper.handleResponse';
 
 const REF_HOST = "http://127.0.0.1:3381"
+const isProd = window.location.href.includes('maze.app');
+const URL = isProd ? 'https://maze.app.megabox.dev' : REF_HOST;
 
 function register(name) {
   const requestOptions = {
@@ -9,7 +11,7 @@ function register(name) {
     body: JSON.stringify({ 'playerName': name })
   };
 
-  return fetch(`${REF_HOST}/register`, requestOptions)
+  return fetch(`${URL}/register`, requestOptions)
     .then(handleResponse)
     .then(data => {
       localStorage.setItem('currentPlayerData', JSON.stringify(data));
@@ -23,7 +25,7 @@ function unregister(id) {
     headers: { 'Content-Type': 'application/json' },
   };
 
-  return fetch(`${REF_HOST}/unregister/${id}`, requestOptions);
+  return fetch(`${URL}/unregister/${id}`, requestOptions);
 }
 
 export const playerService = {

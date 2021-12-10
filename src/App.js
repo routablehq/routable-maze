@@ -13,7 +13,10 @@ import Identify from './components/Identify';
 import Legend from './components/Legend';
 import { playerService } from './services'
 
-const socket = io('http://localhost:3380');
+console.log('-window', window.location);
+const isProd = window.location.href.includes('maze.app');
+const URL = isProd ? 'https://maze.app.megabox.dev' : 'http://localhost:3380'
+const socket = io(URL);
 
 function App() {
 
@@ -81,7 +84,7 @@ function App() {
     if (currentPlayerData) {
       consumeIdentity(JSON.parse(currentPlayerData));
     }
-  });
+  }, []);
 
   return (
     <div className="app">
