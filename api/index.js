@@ -1,4 +1,5 @@
 const uuid = require('uuid');
+const ColorScheme = require('color-scheme');
 const http = require('http');
 const socketIO = require('socket.io');
 const app = require('./app');
@@ -14,6 +15,15 @@ const cache = new NodeCache({ stdTTL: 0 });
 const REGISTERED_PLAYER_KEY = "registeredPlayers";
 const MAZE_SEED = 123456;
 
+const scheme = new ColorScheme();
+scheme.from_hue(21).scheme('triade').variation('hard');
+const colors = scheme.colors();
+
+const nextColor = () => {
+  const player_count = cache.keys().length - 1;
+  return colors[player_count % colors.length];
+}
+
 const hasPlayer = (playerName) => {
   const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY) || new Set();
   return registeredPlayers.has(playerName);
@@ -21,24 +31,23 @@ const hasPlayer = (playerName) => {
 
 const registerPlayer = (id, playerName) => {
   const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY) || new Set();
-  const otherPlayers = Array.from(registeredPlayers);
   registeredPlayers.add(playerName);
   cache.set(REGISTERED_PLAYER_KEY, registeredPlayers);
-  cache.set(id, {playerName, seed: MAZE_SEED})
-  return [MAZE_SEED, otherPlayers];
-}
-
-const getPlayerName = (id) => {
-  return cache.has(id) ? cache.get(id).playerName : null;
+  const color = nextColor();
+  const playerData = {playerName, seed: MAZE_SEED, color};
+  cache.set(id, playerData)
+  return playerData;
 }
 
 const removePlayer = (id) => {
   console.log(`Removing player ${id}`);
   const player = cache.take(id);
-  console.log(`Removing player ${JSON.stringify(player)}`);
-  const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY);
-  registeredPlayers.delete(player.playerName);
-  cache.set(REGISTERED_PLAYER_KEY, registeredPlayers);
+  if (player) {
+    console.log(`Removing player ${JSON.stringify(player)}`);
+    const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY);
+    registeredPlayers.delete(player.playerName);
+    cache.set(REGISTERED_PLAYER_KEY, registeredPlayers);
+  }
 }
 
 const resetAll = () => {
@@ -67,10 +76,12 @@ io.on('connection', (socket) => {
 
   socket.on('location_change', (payload) => {
     const {x, y, id} = payload;
-    const name = getPlayerName(id);
-    if (name) {
-      console.log(`name: ${name}: ${JSON.stringify(payload)}`);
-      socket.broadcast.emit('new_player_location', { x, y, id, name } );
+    const player = cache.get(id);
+    if (player) {
+      const name = player.playerName;
+      const color = player.color;
+      console.log(`name: ${name} ${color}: ${JSON.stringify(payload)}`);
+      socket.broadcast.emit('new_player_location', { x, y, id, name, color } );
     } else {
       console.log("unregistered player: " + id);
     }
@@ -89,8 +100,8 @@ refereeApi.post('/register', function (req, res) {
   const playerName = req.body.playerName;
   const id = req.body.id || uuid.v4();
   if (req.body.id || !hasPlayer(playerName)) {
-    const [seed, otherPlayers] = registerPlayer(id, playerName);
-    res.json({id, seed, "playerName": req.body.playerName});
+    const playerData = registerPlayer(id, playerName);
+    res.json({...playerData, id});
   } else {
     res.sendStatus(400);
   }

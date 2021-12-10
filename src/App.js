@@ -24,6 +24,7 @@ function App() {
   const [otherPlayers, setOtherPlayers] = useState({});
   const [seed, setSeed] = useState();
   const [playerId, setPlayerId] = useState("");
+  const [color, setColor] = useState("e2a477");
   const { x, y, maze, loaded } = useMaze(w, h, seed);
 
 
@@ -34,9 +35,9 @@ function App() {
       console.log('server connected', payload);
     });
 
-    socket.on('new_player_location', ({ id, name, x, y }) => {
-      console.log(`player ${name} (${id}): ${x} ${y}`);
-      setOtherPlayers(prev => ({ ...prev, [id]: { x, y, name } }));
+    socket.on('new_player_location', ({ id, name, color, x, y }) => {
+      console.log(`player ${name} ${color} (${id}): ${x} ${y}`);
+      setOtherPlayers(prev => ({ ...prev, [id]: { x, y, name, color } }));
     });
 
     socket.on('player_left', ({id}) => {
@@ -53,10 +54,11 @@ function App() {
     socket.emit('player_unregistered', { id: playerId });
   }, [playerName]);
 
-  function consumeIdentity(data) {
-    setSeed(data.seed);
-    setPlayerId(data.id);
-    setPlayerName(data.playerName);
+  function consumeIdentity({seed, id, playerName, color}) {
+    setSeed(seed);
+    setPlayerId(id);
+    setPlayerName(playerName);
+    setColor(color);
     setIdentified(true);
   }
 
@@ -88,13 +90,13 @@ function App() {
       {!identified && <Identify setIdentity={setIdentity} />}
       {identified && loaded && (
         <div className="game-container">
-          <Legend playerName={playerName} otherPlayers={otherPlayers} unregister={clearIdentity}/>
+          <Legend playerName={playerName} color={color} otherPlayers={otherPlayers} unregister={clearIdentity}/>
           <Field width={w} height={h}>
             <Hedges maze={maze} width={w} height={h} />
-            <Character x={x} y={y} />
+            <Character clr={color} x={x} y={y} />
             {Object.keys(otherPlayers).map(key => {
-              const { x: i, y: j }  = otherPlayers[key];
-              return <Character x={i} y={j} key={key} />;
+              const { x: i, y: j, color: playerColor}  = otherPlayers[key];
+              return <Character x={i} y={j} clr={playerColor} key={key} />;
             })}
           </Field>
         </div>
