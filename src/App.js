@@ -27,7 +27,6 @@ function App() {
   const [color, setColor] = useState("e2a477");
   const { x, y, maze, loaded } = useMaze(w, h, seed);
 
-
   useEffect(() => {
     socket.emit('client_connected', 'client connected');
 

@@ -4,6 +4,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 const app = require('./app');
 const {refereeApi} = require('./refereeApi');
+const {addUser, joinGame, removeUser} = require('./db/helpers');
 
 
 // CACHE
@@ -36,6 +37,8 @@ const registerPlayer = (id, playerName) => {
   const color = nextColor();
   const playerData = {playerName, seed: MAZE_SEED, color};
   cache.set(id, playerData)
+  addUser(playerName, id);
+  joinGame(id, MAZE_SEED);
   return playerData;
 }
 
@@ -47,6 +50,7 @@ const removePlayer = (id) => {
     const registeredPlayers = cache.get(REGISTERED_PLAYER_KEY);
     registeredPlayers.delete(player.playerName);
     cache.set(REGISTERED_PLAYER_KEY, registeredPlayers);
+    removeUser(id);
   }
 }
 
