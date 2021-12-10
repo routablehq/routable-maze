@@ -51,8 +51,13 @@ body {
   .legend {
     display: block;
     padding-right: 40px;
+    padding-top: 40px;
     a {
       cursor: pointer;
+    }
+    ul {
+      padding: 20px;
+      list-style: square;
     }
   }
   .identify {
